@@ -148,6 +148,7 @@ class TestCalculateQTF(unittest.TestCase):
         allsortedclose(istf[2], self.istf_k, atol=1e-3, rtol=1e-3)
 
 def allsortedclose(a, b, atol=1e-3, rtol=1e-3):
+    a, b = np.atleast_1d(a), np.atleast_1d(b)
     if np.iscomplex(a).any():
         a = np.sort_complex(a)
     else:

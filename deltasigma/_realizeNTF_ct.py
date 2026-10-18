@@ -154,7 +154,7 @@ def realizeNTF_ct(ntf, form='FB', tdac=(0, 1), ordering=None, bp=None,
         bp = np.zeros((order2,))
     if not multi_timing:
         # Need direct terms for every interval of memory in the DAC
-        n_direct = np.ceil(tdac[1]) - 1
+        n_direct = int(np.ceil(tdac[1]) - 1)
         if tdac[0] > 0 and tdac[0] < 1 and tdac[1] > 1 and tdac[1] < 2:
             n_extra = n_direct - 1 #  tdac pulse spans a sample point
         else:
@@ -234,7 +234,7 @@ def realizeNTF_ct(ntf, form='FB', tdac=(0, 1), ordering=None, bp=None,
     else:
         raise ValueError('Sorry, no code for form "%s".', form)
 
-    n_imp = np.ceil(2*order + np.max(tdac2[:, 1]) + 1)
+    n_imp = int(np.ceil(2*order + np.max(tdac2[:, 1]) + 1))
     if method == 'LOOP':
         # Sample the L1 impulse response
         y = impL1(ntf, n_imp)

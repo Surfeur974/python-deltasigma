@@ -116,6 +116,7 @@ def bilogplot(V, f0, fbin, x, y, **fmt):
             raise ValueError("The input value V should have only one" +
                              " non-unitary dimension.")
         V = V.squeeze()
+    f0 = int(np.round(f0))  # index de bin : entier obligatoire (NumPy >= 1.12)
     Xl = V[f0::-1]
     Xr = V[f0:]
     N = V.shape[0] - 1
@@ -125,8 +126,9 @@ def bilogplot(V, f0, fbin, x, y, **fmt):
     p = np.concatenate((pl[::-1], pr))
     f = np.concatenate((-fl[::-1], fr))
     plt.plot(f, p, **fmt)
-    plt.xscale('symlog', linthreshx=x[0],
-               subsx=np.logspace(10**int(np.ceil(np.log10(x[0]))),
+    # Matplotlib >= 3.3 : linthreshx/subsx -> linthresh/subs
+    plt.xscale('symlog', linthresh=x[0],
+               subs=np.logspace(10**int(np.ceil(np.log10(x[0]))),
                                  10**int(1+np.ceil(np.log10(max(x[2], x[1])))))
                )
     ax = plt.gca()
@@ -155,6 +157,7 @@ def _logsmooth2(X, inBin, nbin=8):
     really are because their energy is averaged over several bins.
     """
     N = max(X.shape)
+    inBin = int(np.round(inBin))
     n = nbin
     f1 = int((inBin - 1) % n) + 1
     startbin = np.concatenate((np.arange(f1, inBin, n),
@@ -167,7 +170,7 @@ def _logsmooth2(X, inBin, nbin=8):
     while m < N:
         startbin = np.concatenate((startbin, np.array((m,))))
         n = min(n*1.1, 2**10)
-        m = np.round(m + n)
+        m = int(np.round(m + n))
     stopbin = np.concatenate((startbin[1:] - 1, np.array((N,))))
     f = ((startbin + stopbin)/2. - 1)/N
     p = np.zeros(f.shape)

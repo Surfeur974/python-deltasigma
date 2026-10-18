@@ -439,7 +439,8 @@ def _get_zpk(arg, input=0):
         ri = 0
 
         for item in arg:
-            if hasattr(item, 'B'):
+            if isinstance(item, lti):
+                item = _ss(item)
                 iis = item.B.shape[1]
 
                 if input < ri + iis:
@@ -518,7 +519,8 @@ def _get_num_den(arg, input=0):
         A, B, C, D = partitionABCD(arg)
         num, den = ss2tf(A, B, C, D, input=input)
     elif isinstance(arg, lti):
-        num, den = arg.num, arg.den
+        tf = _tf(arg)
+        num, den = np.asarray(tf.num), np.asarray(tf.den)
     elif _is_num_den(arg):
         num, den = carray(arg[0]).squeeze(), carray(arg[1]).squeeze()
     elif _is_zpk(arg):
@@ -530,7 +532,8 @@ def _get_num_den(arg, input=0):
         for i in arg:
             # Note we do not check if the user has assembled a list with
             # mismatched representations.
-            if hasattr(i, 'B'):  # lti
+            if isinstance(i, lti):  # lti
+                i = _ss(i)
                 iis = i.B.shape[1]
                 if input < ri + iis:
                     num, den = ss2tf(i.A, i.B, i.C, i.D, input=input - ri)
@@ -538,7 +541,7 @@ def _get_num_den(arg, input=0):
                 else:
                     ri += iis
             else:
-                sys = lti(*i)
+                sys = _ss(lti(*i))
                 iis = sys.B.shape[1]
                 if input < ri + iis:
                     num, den = ss2tf(
@@ -602,16 +605,17 @@ def _getABCD(arg):
         # ABCD matrix
         A, B, C, D = partitionABCD(arg)
     elif isinstance(arg, lti):
-        A, B, C, D = arg.A, arg.B, arg.C, np.atleast_2d(arg.D)
+        ss = _ss(arg)
+        A, B, C, D = ss.A, ss.B, ss.C, np.atleast_2d(ss.D)
     elif _is_zpk(arg) or _is_num_den(arg) or _is_A_B_C_D(arg):
-        sys = lti(*arg)
+        sys = _ss(lti(*arg))
         A, B, C, D = sys.A, sys.B, sys.C, sys.D
     elif isinstance(arg, Iterable):
         A, B, C, D = None, None, None, None
         for i in arg:
             # Note we do not check if the user has assembled a list with
             # mismatched lti representations.
-            sys = lti(*i) if not hasattr(i, 'A') else i
+            sys = _ss(i if isinstance(i, lti) else lti(*i))
             if A is None:
                 A = sys.A
             elif not np.allclose(sys.A, A, atol=1e-8, rtol=1e-5):
@@ -695,12 +699,30 @@ def mround(x):
     xf = np.array(_internal(x), dtype=x.dtype)
     return restore_input_form(xf, iform)
 
+def _ss(sys):
+    """Representation etat (A, B, C, D) d'un objet lti SciPy quelconque.
+
+    SciPy >= 1.x renvoie des sous-classes (ZerosPolesGain, TransferFunction,
+    StateSpace) qui n'exposent que leurs propres attributs.
+    """
+    return sys if hasattr(sys, 'A') else sys.to_ss()
+
+
+def _tf(sys):
+    """Representation num/den d'un objet lti SciPy quelconque."""
+    return sys if hasattr(sys, 'num') else sys.to_tf()
+
+
 def _lti_to_zpk(sys):
     """Convert a SciPy LTI system to zeros, poles and gain."""
+    if hasattr(sys, 'zeros') and hasattr(sys, 'gain') \
+            and not hasattr(sys, 'num') and not hasattr(sys, 'A'):
+        return (np.atleast_1d(sys.zeros), np.atleast_1d(sys.poles),
+                np.asarray(sys.gain).item())
     from scipy.signal import tf2zpk
-
-    num = np.asarray(sys.num).squeeze()
-    den = np.asarray(sys.den).squeeze()
+    tf = _tf(sys)
+    num = np.asarray(tf.num).squeeze()
+    den = np.asarray(tf.den).squeeze()
 
     z, p, k = tf2zpk(num, den)
 

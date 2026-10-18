@@ -20,7 +20,7 @@ import unittest
 import numpy as np
 import deltasigma as ds
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 from scipy.signal import lti
 
 class TestPartitionABCD(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestPartitionABCD(unittest.TestCase):
 
     def setUp(self):
         # data for test 1
-        self.ob = lti((1, ), (1, 2, 10))
+        self.ob = lti((1, ), (1, 2, 10)).to_ss()
         ab = np.hstack((self.ob.A, self.ob.B))
         cd = np.hstack((self.ob.C, self.ob.D.reshape((1,1))))
         self.ABCD1 = np.vstack((ab, cd))

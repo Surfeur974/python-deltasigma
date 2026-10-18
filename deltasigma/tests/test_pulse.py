@@ -17,11 +17,11 @@
 """
 
 import unittest
-import pkg_resources
+from deltasigma.tests._compat import pkg_resources
 import numpy as np
 import scipy.io
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 from deltasigma import pulse, axisLabels
 

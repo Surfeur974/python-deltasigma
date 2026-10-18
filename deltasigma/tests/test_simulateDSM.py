@@ -17,7 +17,7 @@
 """
 
 import unittest
-import pkg_resources
+from deltasigma.tests._compat import pkg_resources
 
 import numpy as np
 import deltasigma as ds

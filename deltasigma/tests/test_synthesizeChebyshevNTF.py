@@ -22,7 +22,7 @@ import deltasigma as ds
 
 from warnings import catch_warnings
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 from deltasigma._utils import cplxpair
 

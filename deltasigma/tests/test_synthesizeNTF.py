@@ -19,7 +19,7 @@
 import unittest
 import numpy as np
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 from deltasigma import synthesizeNTF
 from deltasigma._utils import cplxpair as cpx

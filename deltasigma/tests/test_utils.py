@@ -307,9 +307,9 @@ def test_getABCD():
     """Test function for _getABCD()"""
     H = lti(*((1.,),(-2, -2), 1))
     x1 = _getABCD(H)
-    x2 = _getABCD((H.num, H.den))
+    x2 = _getABCD((H.to_tf().num, H.to_tf().den))
     x3 = _getABCD((H.zeros, H.poles, H.gain))
-    x4 = _getABCD((H.A, H.B, H.C, H.D))
+    x4 = _getABCD((H.to_ss().A, H.to_ss().B, H.to_ss().C, H.to_ss().D))
     for y1, y2, y3, y4 in zip(x1, x2, x3, x4):
         assert np.allclose(y1, y2)
         assert np.allclose(y1, y3)

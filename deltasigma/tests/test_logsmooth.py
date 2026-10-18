@@ -20,7 +20,8 @@ from __future__ import division
 
 import unittest
 import numpy as np
-import pkg_resources, scipy.io
+import scipy.io
+from deltasigma.tests._compat import pkg_resources
 
 from numpy.fft import fft
 

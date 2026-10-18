@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 import deltasigma as ds
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 class TestAxisLabels(unittest.TestCase):
     """Test function for axisLabels()"""

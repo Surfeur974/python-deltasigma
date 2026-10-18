@@ -24,7 +24,7 @@ import numpy as np
 import deltasigma as ds
 
 from scipy.signal import zpk2tf
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 class TestMapCtoD(unittest.TestCase):
     """Test class for mapCtoD()"""

@@ -21,7 +21,7 @@ from __future__ import division
 import unittest
 import numpy as np
 
-from nose.tools import raises
+from deltasigma.tests._compat import raises
 
 from deltasigma import mapABCD, realizeNTF, synthesizeNTF, stuffABCD
 

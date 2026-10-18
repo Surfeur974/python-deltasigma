@@ -19,7 +19,7 @@
 from __future__ import division, print_function
 
 import unittest
-import pkg_resources
+from deltasigma.tests._compat import pkg_resources
 import scipy.io
 import numpy as np
 import deltasigma as ds

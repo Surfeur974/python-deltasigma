@@ -16,7 +16,7 @@
 import unittest
 import numpy as np
 import deltasigma as ds
-import pkg_resources
+from deltasigma.tests._compat import pkg_resources
 from scipy.io import loadmat
 from os.path import join
 

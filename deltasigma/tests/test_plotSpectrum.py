@@ -51,12 +51,12 @@ class TestPlotSpectrum(unittest.TestCase):
         window = ds.ds_hann(N)
         NBW = 1.5/N
         spec0 = fft(v * window)/(N/4)
-        freq = np.linspace(0, 0.5, N/2 + 1)
+        freq = np.linspace(0, 0.5, N//2 + 1)
         # plotting
         plt.subplot(211)
-        plt.plot(freq, ds.dbv(spec0[:N/2 + 1]), 'c', linewidth=1, label='$S$')
+        plt.plot(freq, ds.dbv(spec0[:N//2 + 1]), 'c', linewidth=1, label='$S$')
         spec_smoothed = ds.circ_smooth(np.abs(spec0)**2., 16)
-        plt.plot(freq, ds.dbp(spec_smoothed[:N/2 + 1]), 'b--', linewidth=2,
+        plt.plot(freq, ds.dbp(spec_smoothed[:N//2 + 1]), 'b--', linewidth=2,
                  label='$\\mathrm{circ\\_smooth}(S)$')
         ds.plotSpectrum(spec0, fin, 'r', linewidth=2,
                         label='$\\mathrm{plotSpectrum}(S)$')
@@ -71,10 +71,10 @@ class TestPlotSpectrum(unittest.TestCase):
         ax.set_title('Smoothing and plotting for LOG and LIN axes')
         plt.legend(loc=4)
         plt.subplot(212)
-        plt.plot(freq, ds.dbv(spec0[:N/2 + 1]), 'c', linewidth=1, label='$S$')
+        plt.plot(freq, ds.dbv(spec0[:N//2 + 1]), 'c', linewidth=1, label='$S$')
         ds.plotSpectrum(spec0, fin, '--r', linewidth=2,
                         label='$\\mathrm{plotSpectrum}(S)$')
-        plt.plot(freq, ds.dbp(spec_smoothed[:N/2 + 1]), 'b', linewidth=2,
+        plt.plot(freq, ds.dbp(spec_smoothed[:N//2 + 1]), 'b', linewidth=2,
                  label='$\\mathrm{circ\\_smooth}(S)$')
         plt.plot(freq, ds.dbp(Snn*NBW), 'm', linewidth=1.5,
                  label='$\mathrm{from\\ NTF}$')

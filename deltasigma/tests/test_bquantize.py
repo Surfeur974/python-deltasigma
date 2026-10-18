@@ -20,7 +20,7 @@ import unittest
 import numpy as np
 import deltasigma as ds
 import scipy.io
-import pkg_resources
+from deltasigma.tests._compat import pkg_resources
 
 
 class TestBQuantize(unittest.TestCase):
@@ -40,7 +40,7 @@ class TestBQuantize(unittest.TestCase):
         mval = []
         mcsd = []
         for i in range(s.shape[1]):
-            mval.append(float(s[0, i][0]))
+            mval.append(np.asarray(s[0, i][0]).item())
             mcsd.append(s[0, i][1])
         for i in range(len(mval)):
             self.assertTrue(np.allclose(mval[i], yval[i], atol=1e-8, rtol=1e-5))

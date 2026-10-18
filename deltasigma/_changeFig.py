@@ -103,12 +103,12 @@ def _setAxLinewidth(ax, linewidth=None, markersize=None, BW=False):
     """Take each Line2D in the axes, ax, and convert the line style
     Optionally also convert to BW, from http://tinyurl.com/qylqgoz
     """
-    LINES = [{'marker': None, 'dash': (None,None)},
-             {'marker': None, 'dash': [5,5]},
-             {'marker': None, 'dash': [5,3,1,3]},
-             {'marker': None, 'dash': [1,3]},
-             {'marker': None, 'dash': [5,2,5,2,5,10]},
-             {'marker': None, 'dash': [5,3,1,2,1,10]},
+    LINES = [{'marker': '', 'dash': (None,None)},
+             {'marker': '', 'dash': [5,5]},
+             {'marker': '', 'dash': [5,3,1,3]},
+             {'marker': '', 'dash': [1,3]},
+             {'marker': '', 'dash': [5,2,5,2,5,10]},
+             {'marker': '', 'dash': [5,3,1,2,1,10]},
              {'marker': 'o', 'dash': (None,None)}] #[1,2,1,10]}
     COLORMAP = {}
 
@@ -119,7 +119,11 @@ def _setAxLinewidth(ax, linewidth=None, markersize=None, BW=False):
                 newColor = LINES.pop(0)
                 COLORMAP.update({origColor:newColor})
             line.set_color('black')
-            line.set_dashes(COLORMAP[origColor]['dash'])
+            dash = COLORMAP[origColor]['dash']
+            if dash is None or all(d is None for d in dash):
+                line.set_linestyle('-')   # trait plein
+            else:
+                line.set_dashes(dash)
             line.set_marker(COLORMAP[origColor]['marker'])
         if markersize is not None:
             line.set_markersize(markersize)

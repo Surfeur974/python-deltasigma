@@ -31,8 +31,13 @@ def bunquantize(q):
         :func:`bquantize`
 
     """
+    # Liste de matrices CSD (sortie de bquantize) : longueurs differentes
+    # possibles, NumPy 2 refuse d'en faire un tableau -> une valeur par element.
+    if isinstance(q, (list, tuple)) and len(q) and \
+            all(np.ndim(qi) == 2 for qi in q):
+        return carray([float(bunquantize(qi).sum()) for qi in q])
     q = np.atleast_2d(carray(q))
-    # q est de forme (2n, m) : lignes paires = signes, lignes impaires = exposants.
+    # q est de forme (2n, m) : lignes paires = exposants, lignes impaires = signes.
     # Une matrice CSD unique (2, m) doit donner UNE valeur, pas m valeurs.
     if q.shape[0] % 2 != 0:
         raise ValueError('q doit avoir un nombre pair de lignes, recu %d'
