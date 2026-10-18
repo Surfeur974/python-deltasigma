@@ -1,7 +1,10 @@
 python-deltasigma
 =================
 
+This fork is just some updates to work on the most recent python, numpy, scipy and matplotlib...
+
 A port of the **MATLAB Delta Sigma Toolbox** based on free software and very little sleep
+
 
 
 The **python-deltasigma** is a Python package to *synthesize, simulate, scale
@@ -48,8 +51,8 @@ according to
 
 `python-deltasigma` runs on Linux, Mac OS X and Windows.
 
-Installing requires **Python 2.6+** or **3.3+**, **numpy**, **scipy**
-(>= 0.11.0) and **matplotlib**.
+Installing requires **Python 3.14.6** , **numpy 2.5.4**, **scipy 1.18.1**
+and **matplotlib 3.11.2**.
 
 Strongly recommended: **Cython** - for significantly faster delta sigma modulator simulations. 
 
@@ -61,7 +64,7 @@ that people tell me they manage to have a working setup.
 
 When the dependencies are satisfied, run:
 
-    pip install deltasigma
+    pip install git+https://github.com/Surfeur974/python-deltasigma.git
 
 to install the latest stable version from the [Python
 Package Index (PYPI)](http://pypi.python.org), or:

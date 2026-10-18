@@ -22,52 +22,10 @@ import matplotlib.pyplot as plt
 from ._utils import _get_zpk
 
 
+
 def plotPZ(H, color='b', markersize=5, showlist=False):
-    """Plot the poles and zeros of a transfer function.
+    """Plot the poles and zeros of a transfer function."""
 
-    **Parameters:**
-
-    H : transfer function
-        Any supported transfer function representation, 
-        eg num/den, zpk, lti...
-
-    color : Any matplotlib-compatible color descr, optional
-        For example, 'r' for 'red' or '#000080' for 'navy'.
-        You can also specify separately poles and zeros, in a tuple.
-
-    markersize : scalar, optional
-        The markers size in points.
-
-    showlist : boolean, optional
-        Superimpose a list of the poles and zeros on the plot.
-
-    .. plot::
-
-       import matplotlib.pyplot as plt
-       from deltasigma import synthesizeNTF, plotPZ
-       order = 5
-       osr = 32
-       f0 = 0.
-       Hinf = 1.5
-       ntf = synthesizeNTF(order, osr, 2, Hinf, f0)
-       plt.figure(figsize=(8, 6))
-       plotPZ(ntf, color=('r', 'b'), showlist=True)
-       plt.title("NTF singularities")
-       plt.show()
-
-    """
-
-    # Parts of the code come from 'pydsm'
-    #
-    # Original copyright notices:
-    #
-    # For pydsm
-    # Copyright (c) 2012, Sergio Callegari
-    # All rights reserved.
-    #
-    # For Richard Schreier's Delta Sigma toolbox
-    # Copyright (c) 2009, Richard Schreier
-    
     z, p, _ = _get_zpk(H)
     p = np.real_if_close(np.round(p, 5))
     z = np.real_if_close(np.round(z, 5))
@@ -75,55 +33,72 @@ def plotPZ(H, color='b', markersize=5, showlist=False):
     pole_fmt = {'marker': 'x', 'markersize': markersize}
     zero_fmt = {'marker': 'o', 'markersize': markersize}
 
-    if isinstance(color, list) or isinstance(color, tuple):
+    if isinstance(color, (list, tuple)):
         pole_fmt['color'] = color[0]
         zero_fmt['color'] = color[1]
     else:
         pole_fmt['color'] = color
         zero_fmt['color'] = color
 
-    plt.grid(True)
-
-    # Plot x and o for poles and zeros, respectively
-    plt.plot(p.real, p.imag, linestyle='None', **pole_fmt)
-    if len(z) > 0:
-        plt.plot(z.real, z.imag, linestyle='None', **zero_fmt)
-
-    # Draw unit circle, real axis and imag axis
-    circle = np.exp(2j*np.pi*np.linspace(0, 1, 100))
-    plt.plot(circle.real, circle.imag)
-    
     ax = plt.gca()
-    ax.set_autoscale_on(False)
-    if showlist:
-        ax = plt.gca()
-        x1, x2, y1, y2 = ax.axis()
-        x2 = np.round((x2 - x1)*1.48 + x1, 1)
-        ax.axis((x1, x2, y1, y2))
-        markers = [] 
-        descr = []
-        ps = p[p.imag >= 0]
-        for pi in ps:
-            markers += [plt.Line2D((), (), linestyle='None', **pole_fmt)]
-            if np.allclose(pi.imag, 0, atol=1e-5):
-                descr += ['%+.4f' % pi.real]
-            else:
-                descr += ['%+.4f+/-j%.4f' %  (pi.real, pi.imag)]
-        if len(z) > 0:
-            for zi in z[z.imag >= 0]:
-                markers += [plt.Line2D((), (), linestyle='None', **zero_fmt)]
-                if zi.imag == 0:
-                    descr += ['%+.4f' % zi.real]
-                else:
-                    descr += ['%+.4f +/-j%.4f' % (zi.real, zi.imag)]
-        plt.legend(markers, descr, title="Poles (x) and zeros (o)", ncol=1, loc='best', 
-                   handlelength=.55, prop={'size':10})
-    else:
-        plt.xlim((-1.1, 1.1))
-        plt.ylim((-1.1, 1.1))
-    plt.gca().set_aspect('equal')
-    
-    # plt.axes().set_aspect('equal', 'datalim')
-    plt.ylabel('Imag')
-    plt.xlabel('Real')
+    ax.grid(True)
 
+    # Poles and zeros
+    ax.plot(p.real, p.imag, linestyle='None', **pole_fmt)
+    if len(z) > 0:
+        ax.plot(z.real, z.imag, linestyle='None', **zero_fmt)
+
+    # Unit circle and axes
+    circle = np.exp(2j * np.pi * np.linspace(0, 1, 400))
+    ax.plot(circle.real, circle.imag, color='black', linewidth=1)
+    ax.axhline(0, color='black', linewidth=0.7)
+    ax.axvline(0, color='black', linewidth=0.7)
+
+    # Keep enough room for the complete unit circle.
+    # The extra horizontal space accommodates the legend.
+    margin = 1.1
+    if showlist:
+        xlim = (-margin, 1.8)
+    else:
+        xlim = (-margin, margin)
+
+    ax.set_xlim(xlim)
+    ax.set_ylim(-margin, margin)
+    ax.set_aspect('equal', adjustable='box')
+
+    if showlist:
+        markers = []
+        descr = []
+
+        # List one pole/zero from each conjugate pair
+        for pi in p[p.imag >= 0]:
+            markers.append(
+                plt.Line2D((), (), linestyle='None', **pole_fmt)
+            )
+            if np.isclose(pi.imag, 0, atol=1e-5):
+                descr.append('%+.4f' % pi.real)
+            else:
+                descr.append('%+.4f+/-j%.4f' % (pi.real, pi.imag))
+
+        for zi in z[z.imag >= 0]:
+            markers.append(
+                plt.Line2D((), (), linestyle='None', **zero_fmt)
+            )
+            if np.isclose(zi.imag, 0, atol=1e-5):
+                descr.append('%+.4f' % zi.real)
+            else:
+                descr.append('%+.4f+/-j%.4f' % (zi.real, zi.imag))
+
+        ax.legend(
+            markers,
+            descr,
+            title="Poles (x) and zeros (o)",
+            ncol=1,
+            loc='center left',
+            bbox_to_anchor=(1.02, 0.5),
+            handlelength=0.55,
+            prop={'size': 10}
+        )
+
+    ax.set_ylabel('Imag')
+    ax.set_xlabel('Real')

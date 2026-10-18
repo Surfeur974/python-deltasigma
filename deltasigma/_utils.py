@@ -404,84 +404,86 @@ def pretty_lti(arg):
 
 
 def _get_zpk(arg, input=0):
-    """Utility method to convert the input arg to a z, p, k representation.
+    """Convert an input representation to zeros, poles and gain.
 
-    **Parameters:**
-
-    arg, which may be:
-
-    * ZPK tuple,
-    * num, den tuple,
-    * A, B, C, D tuple,
-    * a scipy LTI object,
-    * a sequence of the tuples of any of the above types.
-
-    input : scalar
-        In case the system has multiple inputs, which input is to be
-        considered. Input `0` means first input, and so on.
-
-    **Returns:**
-
-    The sequence of ndarrays z, p and a scalar k
-
-    **Raises:**
-
-    TypeError, ValueError
-
-    .. warn: support for MISO transfer functions is experimental.
+    Supported representations:
+    - ZPK tuple
+    - numerator/denominator tuple
+    - ABCD tuple
+    - NumPy ABCD matrix
+    - SciPy LTI object
+    - sequence of supported representations
     """
     z, p, k = None, None, None
+
     if isinstance(arg, np.ndarray):
-        # ABCD matrix
         A, B, C, D = partitionABCD(arg)
         z, p, k = ss2zpk(A, B, C, D, input=input)
+
     elif isinstance(arg, lti):
-        z, p, k = arg.zeros, arg.poles, arg.gain
+        z, p, k = _lti_to_zpk(arg)
+
     elif _is_zpk(arg):
-        z, p, k = np.atleast_1d(arg[0]), np.atleast_1d(arg[1]), arg[2]
+        z = np.atleast_1d(arg[0])
+        p = np.atleast_1d(arg[1])
+        k = arg[2]
+
     elif _is_num_den(arg):
         sys = lti(*arg)
-        z, p, k = sys.zeros, sys.poles, sys.gain
+        z, p, k = _lti_to_zpk(sys)
+
     elif _is_A_B_C_D(arg):
         z, p, k = ss2zpk(*arg, input=input)
+
     elif isinstance(arg, Iterable):
         ri = 0
-        for i in arg:
-            # Note we do not check if the user has assembled a list with
-            # mismatched lti representations.
-            if hasattr(i, 'B'):
-                iis = i.B.shape[1]
+
+        for item in arg:
+            if hasattr(item, 'B'):
+                iis = item.B.shape[1]
+
                 if input < ri + iis:
-                    z, p, k = ss2zpk(i.A, i.B, i.C, i.D, input=input - ri)
+                    z, p, k = _lti_to_zpk(
+                        lti(item.A, item.B, item.C, item.D)
+                    ) if iis == 1 else ss2zpk(
+                        item.A, item.B, item.C, item.D,
+                        input=input - ri
+                    )
                     break
-                else:
-                    ri += iis
-                    continue
-            elif _is_A_B_C_D(arg):
-                iis = arg[1].shape[1]
+
+                ri += iis
+
+            elif _is_A_B_C_D(item):
+                iis = np.asarray(item[1]).reshape(
+                    np.asarray(item[1]).shape[0], -1
+                ).shape[1]
+
                 if input < ri + iis:
-                    z, p, k = ss2zpk(*arg, input=input - ri)
+                    z, p, k = ss2zpk(
+                        *item, input=input - ri
+                    )
                     break
-                else:
-                    ri += iis
-                    continue
+
+                ri += iis
+
             else:
                 if ri == input:
-                    sys = lti(*i)
-                    z, p, k = sys.zeros, sys.poles, sys.gain
+                    sys = lti(*item)
+                    z, p, k = _lti_to_zpk(sys)
                     break
-                else:
-                    ri += 1
-                    continue
+
                 ri += 1
-        if (z, p, k) == (None, None, None):
-            raise ValueError("The LTI representation does not have enough" +
-                             "inputs: max %d, looking for input %d" %
-                             (ri - 1, input))
+
+        if z is None or p is None or k is None:
+            raise ValueError(
+                "The LTI representation does not have enough inputs: "
+                "max %d, looking for input %d" % (ri - 1, input)
+            )
+
     else:
         raise TypeError("Unknown LTI representation: %s" % arg)
-    return z, p, k
 
+    return z, p, k
 
 def _get_num_den(arg, input=0):
     """Utility method to convert the input arg to a (num, den) representation.
@@ -692,3 +694,14 @@ def mround(x):
     _internal = np.frompyfunc(_mround, 1, 1)
     xf = np.array(_internal(x), dtype=x.dtype)
     return restore_input_form(xf, iform)
+
+def _lti_to_zpk(sys):
+    """Convert a SciPy LTI system to zeros, poles and gain."""
+    from scipy.signal import tf2zpk
+
+    num = np.asarray(sys.num).squeeze()
+    den = np.asarray(sys.den).squeeze()
+
+    z, p, k = tf2zpk(num, den)
+
+    return np.atleast_1d(z), np.atleast_1d(p), np.asarray(k).item()
