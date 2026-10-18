@@ -3,6 +3,23 @@ python-deltasigma
 
 This fork is just some updates to work on the most recent python, numpy, scipy and matplotlib...
 
+## For Cython setup :
+
+1. **Download a portable C compiler (MinGW-w64)**:
+   - Download Winlibs GCC standalone (e.g., from https://winlibs.com/, ZIP UCRT runtime 64-bit).
+   - Extract the archive to a simple path, for example: C:\mingw64.
+
+2. **Configure setuptools (create a setup.cfg file at the root)**:
+   [build]
+   compiler=mingw32
+
+3. **Run the compilation (PowerShell)**:
+   - Temporarily add MinGW to your PATH variable in the terminal:
+     $env:PATH = "C:\mingw64\bin;" + $env:PATH
+   - Run the build command:
+     python setup.py build_ext --inplace
+##  
+
 A port of the **MATLAB Delta Sigma Toolbox** based on free software and very little sleep
 
 

@@ -32,7 +32,7 @@ Fast simulator for a generic delta sigma modulator using scipy blas
 ===================================================================
 """
 
-from cpython cimport PyCObject_AsVoidPtr
+from cpython.pycapsule cimport PyCapsule_GetPointer
 import numpy as np
 cimport numpy as np
 np.import_array()
@@ -46,10 +46,10 @@ ctypedef void (*dgemv_ptr) (char *trans, int *m, int *n,\
     double *beta,  double *y, int *incy)
 ctypedef void (*dcopy_ptr) (int *N, double *x, int *incx,\
     double *y, int*incy)
-cdef dgemv_ptr dgemv=<dgemv_ptr>PyCObject_AsVoidPtr(\
-    sp.linalg.blas.fblas.dgemv._cpointer)
-cdef dcopy_ptr dcopy=<dcopy_ptr>PyCObject_AsVoidPtr(\
-    sp.linalg.blas.fblas.dcopy._cpointer)
+cdef dgemv_ptr dgemv=<dgemv_ptr>PyCapsule_GetPointer(\
+    sp.linalg.blas.fblas.dgemv._cpointer, NULL)
+cdef dcopy_ptr dcopy=<dcopy_ptr>PyCapsule_GetPointer(\
+    sp.linalg.blas.fblas.dcopy._cpointer, NULL)
 
 include '_simulateDSM_helper.pxi'
 
