@@ -37,43 +37,16 @@ from ._utils import _get_zpk, _is_zpk
 
 warned = False
 
-# Code to compile the Cython extensions
-# Extensions tested on Linux and Mac OS X, but not on Windows
-# please report any bug (or patches!) on
-# https://github.com/ggventurini/python-deltasigma/issues
-
 try:
-    if 'nt' in os.name:
-        # if somebody actually goes through the trouble of compiling
-        # it on Windows, we'll make available a patch to re-enable it.
-        # In most cases now, users only get error messages from BLAS
-        # not being available.
-        raise ImportError('CBLAS extension disabled on Windows')
-    import pyximport
-    pyximport.install(setup_args=setup_args)
-    from ._simulateDSM_cblas import simulateDSM as _simulateDSM_cblas
-except ImportError as e:
-    if _debug:
-        print(str(e))
-    _simulateDSM_cblas = None
-
-try:
-    import pyximport
-    pyximport.install(setup_args=setup_args, inplace=True)
-    from ._simulateDSM_scipy_blas import simulateDSM as _simulateDSM_scipy_blas
-except ImportError as e:
-    if _debug:
-        print(str(e))
-    _simulateDSM_scipy_blas = None
-
-# fall back to CPython
-
-simulation_backends = {'CBLAS':(_simulateDSM_cblas is not None),
-                       'Scipy_BLAS':(_simulateDSM_scipy_blas is not None),
-                       'CPython':True}
+    from ._simulateDSM_core import simulateDSM_core as _compiled_core
+except ImportError:
+    _compiled_core = None
+_simulateDSM_cblas = None
+_simulateDSM_scipy_blas = None
+simulation_backends = {"Cython": _compiled_core is not None, "CPython": True}
 
 def simulateDSM(u, arg2, nlev=2, x0=0.):
-    """Simulate a delta-sigma modulator.
+    """Simulate a Delta Sigma modulator
 
     Compute the output of a general delta-sigma modulator with input ``u``,
     a structure described by ``ABCD``, an initial state ``x0`` (default zero) and
@@ -98,7 +71,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
     nlev : int or sequence or ndarray
         Number of levels in the quantizers. Set ``nlev`` to a scalar for a
         single quantizer modulator. Multiple quantizers are implied by
-        making ``nlev`` an array.
+        making nlev an array.
     x0 : float or sequence or ndarray
         The initial status of the modulator. If ``x0`` is set to float, its
         value will be used for all the states. If it is set to a sequence of
@@ -164,7 +137,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
     .. plot::
 
         import numpy as np
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from numpy.fft import fft
         from deltasigma import *
         OSR = 32
@@ -179,7 +152,6 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         t = np.arange(85)
         # the equivalent of MATLAB 'stairs' is step in matplotlib
         plt.step(t, u[t], 'g', label='u(n)')
-        plt.hold(True)
         plt.step(t, v[t], 'b', label='v(n)')
         plt.axis([0, 85, -1.2, 1.2]);
         plt.ylabel('u, v');
@@ -187,7 +159,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         plt.legend()
         plt.subplot(2, 1, 2)
         spec = fft(v*ds_hann(N))/(N/4)
-        plt.plot(np.linspace(0, 0.5, N/2 + 1), dbv(spec[:N/2 + 1]))
+        plt.plot(np.linspace(0, 0.5, N//2 + 1), dbv(spec[:N//2 + 1]))
         plt.axis([0, 0.5, -120, 0])
         plt.grid(True)
         plt.ylabel('dBFS/NBW')
@@ -210,8 +182,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         return _simulateDSM_scipy_blas(u, arg2, nlev, x0, store_xn=True,
                                        store_xmax=True, store_y=True)
     else:
-        if not warned:
-            warn('Using a slow implementation of simulateDSM\n' +
-                 'Refer to the docs for how to switch to a fast one')
+        if not warned and not simulation_backends.get('Cython', False):
+            warn('Using the pure Python implementation of simulateDSM')
             warned = True
         return _simulateDSM_python(u, arg2, nlev, x0)

@@ -19,7 +19,7 @@
 from __future__ import division
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 
 from ._calculateTF import calculateTF
 from ._dbv import dbv
@@ -32,6 +32,18 @@ from ._plotPZ import plotPZ
 from ._rmsGain import rmsGain
 
 
+def _scalar(value):
+    """Retourne un float Python depuis un scalaire ou un tableau a un element.
+
+    NumPy 2.x interdit la conversion implicite d'un tableau ndim>0 en scalaire.
+    """
+    array = np.asarray(value)
+    if array.size != 1:
+        raise ValueError("valeur non scalaire, shape=%s" % (array.shape,))
+    return float(array.reshape(-1)[0].real)
+
+
+
 def DocumentNTF(arg1, osr=64, f0=0, quadrature=False):
     """Plot the NTF's poles and zeros as well as its frequency-response
 
@@ -42,7 +54,7 @@ def DocumentNTF(arg1, osr=64, f0=0, quadrature=False):
 
        from deltasigma import *
        import numpy as np
-       import pylab as plt
+       import matplotlib.pyplot as plt
        order = 4
        osr = 64
        nlev = 2
@@ -78,16 +90,15 @@ def DocumentNTF(arg1, osr=64, f0=0, quadrature=False):
 
     if stf is not None:
         fig.suptitle('NTF and STF', fontsize=14)
-        G = dbv(evalTF(stf, z))
-        plt.hold(True)
+        G = np.asarray(dbv(evalTF(stf, z)))
+        if G.ndim == 0 or G.size == 1:
+            G = np.full(np.shape(f), float(G.reshape(-1)[0]))
         plt.plot(f, G, 'm')
-        plt.hold(False)
     else:
         fig.suptitle('NTF', fontsize=14)
 
     f1, f2 = ds_f1f2(osr, f0, quadrature)
-    NG0 = dbv(rmsGain(ntf, f1, f2))
-    plt.hold(True)
+    NG0 = _scalar(dbv(rmsGain(ntf, f1, f2)))
     plt.plot(np.array([f1, f2]), NG0*np.array([1, 1]), 'k', linewidth=3)
 
     if f0  ==  0:
@@ -96,9 +107,11 @@ def DocumentNTF(arg1, osr=64, f0=0, quadrature=False):
     else:
         plt.text(f0, NG0 + 1, '%.0fdB' % NG0, horizontalalignment = 'center',
                  verticalalignment = 'bottom')
-    msg = ' Inf-norm of H = %.2f\n 2-norm of H = %.2f' % (infnorm(ntf)[0], rmsGain(ntf, 0, 1))
+    inf_norm = _scalar(infnorm(ntf)[0])
+    rms_norm = _scalar(rmsGain(ntf, 0, 1))
+    msg = ' Inf-norm of H = %.2f\n 2-norm of H = %.2f' % (inf_norm, rms_norm)
     if quadrature:
-        ING0 = dbv(rmsGain(ntf, - f1, - f2))
+        ING0 = _scalar(dbv(rmsGain(ntf, - f1, - f2)))
         plt.plot(-np.array([f1, f2]), ING0*np.array([1, 1]), 'k', linewidth=3)
         plt.text(-f0, ING0 + 1, '%.0fdB' % ING0, horizontalalignment = 'center',
                  verticalalignment = 'bottom')

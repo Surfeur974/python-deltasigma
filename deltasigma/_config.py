@@ -21,7 +21,7 @@ import sys
 from warnings import warn
 
 import numpy as np
-from numpy.distutils.system_info import get_info
+
 
 # should synthesizeNTF run the optimization routine?
 optimize_NTF = True
@@ -34,7 +34,7 @@ itn_limit = 500
 _debug = False
 
 # get blas information to compile the cython extensions
-blas_info = get_info("blas")
+blas_info = {}
 if len(blas_info) == 0 and _debug:
     warn("Numpy did not detect the BLAS library in the system")
 # Let's make an educated guess
@@ -48,7 +48,7 @@ else:
 setup_args = {"script_args":(["--compiler=mingw32"]
                              if sys.platform == 'win32' else [])}
 lib_include = [np.get_include()]
-if "include_dirs" not in blas_info and "BLAS_H" not in os.environ and \
+if False and "include_dirs" not in blas_info and "BLAS_H" not in os.environ and \
    'nt' not in os.name and (not guessed_include or \
      not os.path.isfile(os.path.join(guessed_include, 'cblas.h'))):
     warn("Cannot find the path for 'cblas.h'. You may set it using the environment variable "

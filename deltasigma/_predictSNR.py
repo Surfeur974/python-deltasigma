@@ -153,7 +153,7 @@ def predictSNR(ntf, OSR=64, amp=None, f0=0.):
     den = np.real_if_close(den)
     num1 = num - den
     N = max(amp.shape)
-    snr = np.zeros((1, N)) - np.Inf
+    snr = np.zeros((1, N)) - np.inf
     k0 = np.zeros((1, N))
     k1 = np.zeros((1, N))
     sigma_e2 = np.zeros((1, N))
@@ -241,12 +241,13 @@ def powerGain(num, den, Nimp=100):
     in future calls and Nimp0 is the suggested number (100) to use.
     """
     unstable = False
+    Nimp = int(round(Nimp))
     _, (imp, ) = dimpulse((num, den, 1), t=np.linspace(0, Nimp, Nimp))
     if np.sum(abs(imp[Nimp - 11:Nimp])) < 1e-08 and Nimp > 50:
-        Nimp = np.round(Nimp/1.3)
+        Nimp = int(np.round(Nimp/1.3))
     else:
         while np.sum(abs(imp[Nimp - 11:Nimp])) > 1e-06:
-            Nimp = Nimp*2
+            Nimp = int(Nimp*2)
             _, (imp, ) = dimpulse((num, den, 1), t=np.linspace(0, Nimp, Nimp))
             if np.sum(abs(imp[Nimp - 11:Nimp])) >= 50 or Nimp >= 10000.0:
                 unstable = True
@@ -255,6 +256,6 @@ def powerGain(num, den, Nimp=100):
     if not unstable:
         pGain = np.sum(imp**2)
     else:
-        pGain = np.Inf
+        pGain = np.inf
 
     return pGain, Nimp

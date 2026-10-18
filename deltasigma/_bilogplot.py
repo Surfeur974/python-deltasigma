@@ -21,7 +21,7 @@ from __future__ import division
 from warnings import warn
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 from numpy.linalg import norm
 
 from ._dbp import dbp
@@ -93,7 +93,7 @@ def bilogplot(V, f0, fbin, x, y, **fmt):
         from __future__ import division
         from deltasigma import synthesizeNTF, simulateDSM
         from deltasigma import calculateSNR, ds_hann, bilogplot
-        import pylab as plt
+        import matplotlib.pyplot as plt
         import numpy as np
         f0 = 1./8
         OSR = 64
@@ -105,7 +105,7 @@ def bilogplot(V, f0, fbin, x, y, **fmt):
         u = 0.5*np.sin(2*np.pi*ftest/N*np.arange(N))
         v, xn, xmax, y = simulateDSM(u, H)
         spec = np.fft.fft(v*ds_hann(N))/(N/4)
-        X = spec[:N/2 + 1]
+        X = spec[:N//2 + 1]
         plt.figure()
         bilogplot(X, f0*N, ftest, (.03, .3, .3), (-140, 0, 10))
 

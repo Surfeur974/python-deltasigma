@@ -61,8 +61,8 @@ def mapABCD(ABCD, form='CRFB'):
     subdiag = diagonal_indices(ABCD, -1)
     supdiag = [a[odd:order - 1:2] for a in diagonal_indices(ABCD, +1)]
     if form in ('CRFB', 'CIFB', 'CRFBD'):
-        c = ABCD[subdiag]
-        g = -ABCD[supdiag]
+        c = ABCD[tuple(subdiag)]
+        g = -ABCD[tuple(supdiag)]
         if form == 'CRFB':
             dly = np.arange(1 + odd, order, 2)
             ABCD[dly, :] = ABCD[dly, :] \
@@ -80,9 +80,9 @@ def mapABCD(ABCD, form='CRFB'):
         a = np.zeros((order,))
         c = np.concatenate((
                             np.array((-ABCD[0, order + 1],)), 
-                            ABCD[subdiag][:-1]
+                            ABCD[tuple(subdiag)][:-1]
                           ))
-        g = -ABCD[supdiag]
+        g = -ABCD[tuple(supdiag)]
         if even:
             multg = np.arange(0, order, 2)
             ABCD[multg, :] = ABCD[multg, :] + np.dot(np.diag(g), ABCD[multg + 1, :])
@@ -101,8 +101,8 @@ def mapABCD(ABCD, form='CRFB'):
         subdiag = diagonal_indices(ABCD[:order, :order], -1)
         supdiag = [a[odd:order:2] for a in 
                       diagonal_indices(ABCD[:order, :order], +1)]
-        g = -ABCD[supdiag]
-        c = np.concatenate((np.atleast_1d(-ABCD[0, order + 2]), ABCD[subdiag]))
+        g = -ABCD[tuple(supdiag)]
+        c = np.concatenate((np.atleast_1d(-ABCD[0, order + 2]), ABCD[tuple(subdiag)]))
         a = np.zeros((order, ))
         for i in range(0, order, 2):
             a[i] = ABCD[order, i]
@@ -112,15 +112,15 @@ def mapABCD(ABCD, form='CRFB'):
         for i in range(1, order, 2):
             b[i] = b[i] - c[i]*b[i - 1]
             if odd:
-                b[i] = b[i] + g[(i - 1)/2]*b[i + 1]
+                b[i] = b[i] + g[(i - 1)//2]*b[i + 1]
         yscale = ABCD[order + 1, order]
         a = a*yscale
         b[-1] = b[-1]*yscale
     elif form in ('CIFF', 'Stratos'):
         a = ABCD[order, :order]
         c = np.concatenate((np.atleast_1d(-ABCD[0, order + 1]),
-                            ABCD[subdiag][:-1]))
-        g = -ABCD[supdiag]
+                            ABCD[tuple(subdiag)][:-1]))
+        g = -ABCD[tuple(supdiag)]
         b = ABCD[:, order].T
     else:
         raise ValueError('Form %s is not yet supported.' % form)

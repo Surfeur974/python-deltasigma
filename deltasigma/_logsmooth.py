@@ -25,7 +25,7 @@ from ._dbp import dbp
 
 
 def logsmooth(X, inBin, nbin=8, n=3):
-    """Smooth the FFT and convert it to dB.
+    """Smooth the fft, and convert it to dB.
 
     **Parameters:**
 
@@ -43,8 +43,8 @@ def logsmooth(X, inBin, nbin=8, n=3):
         Around the location of the input signal and its harmonics (up to the
         third harmonic), don't average for n bins.
 
-    The ``logsmooth`` algorithm uses ``nbin`` bins from 0 to 3*inBin,
-    thereafter the bin sizes are increased by a factor 1.1,
+    The logsmooth algorithm uses nbin bins from 0 to 3*inBin,
+    thereafter the bin sizes is increased by a factor of 1.1,
     staying less than 2^10.
 
     For the :math:`n` sets of bins:
@@ -59,14 +59,14 @@ def logsmooth(X, inBin, nbin=8, n=3):
 
     **Returns:**
 
-    f, p : tuple of 1d-arrays
+    f, p : tuple of 1d- ndarrays
         The bins and smoothed FFT, expressed in dB.
 
     .. seealso::
 
          * :func:`plotSpectrum`, convenience function to first call
            :func:`logsmooth` and then plot on a logarithmic x-axis its return
-           values.
+           value.
 
          * :func:`circ_smooth`, smoothing algorithm suitable for linear
            x-axis plotting.
@@ -85,10 +85,9 @@ def logsmooth(X, inBin, nbin=8, n=3):
         u0 = u0 + .01*u0**2+.001*u0**3+.005*u0**4
         U = np.fft.fft(u0 * ds_hann(N))/(N/4)
         f = np.linspace(0, Fs, N + 1)
-        f = f[:N/2 + 1]
+        f = f[:N//2 + 1]
         plt.subplot(211)
-        plt.semilogx(f, dbv(U[:N/2 + 1]))
-        plt.hold(True)
+        plt.semilogx(f, dbv(U[:N//2 + 1]))
         inBin = np.round(freq/Fs*N)
         fS, US = logsmooth(U, inBin)
         plt.semilogx(fS*Fs, US, 'r', linewidth=2.5)

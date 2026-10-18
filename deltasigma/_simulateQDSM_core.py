@@ -23,13 +23,18 @@ import numpy as np
 from ._ds_quantize import ds_quantize
 
 def simulateQDSM_core(u, A, B, C, D1, order, nlev, nq, x0):
+    # x0 doit etre un vecteur COLONNE (order, 1) : si un vecteur 1-D est
+    # fourni, np.dot(A, x0) reste 1-D et l'addition avec un (order, 1)
+    # produit un broadcast (order, order) au lieu de (order, 1).
+    x0 = np.asarray(x0, dtype='complex128').reshape((order, 1))
+    u = np.atleast_2d(np.asarray(u, dtype='complex128'))
     N = u.shape[1]
     v = np.zeros(shape=(nq, N), dtype='complex128')
     y = np.zeros(shape=(nq, N), dtype='complex128')
     # Need to store the state information
     xn = np.zeros(shape=(order, N), dtype='complex128')
     # Need to keep track of the state maxima
-    xmax = abs(x0.copy())
+    xmax = np.abs(x0.copy())
     for i in range(N):
         y[:, i] = np.dot(C, x0) + np.dot(D1, u[:, i].reshape((-1, 1)))
         v[:, i] = ds_qquantize(y[:, i], nlev)
@@ -44,7 +49,14 @@ def ds_qquantize(y, n):
     """Quadrature quantization
     """
     if np.isreal(n):
-        v = ds_quantize(np.real(y), n) + 1j*ds_quantize(np.imag(y), n)
+        # ds_quantize attend un tableau 2-D (nq, N) : on remet en forme puis
+        # on restitue la forme d'origine, sinon y.shape[1] leve IndexError.
+        yr = np.atleast_2d(np.real(y)).reshape((-1, 1)) if np.ndim(y) == 1 \
+             else np.atleast_2d(np.real(y))
+        yi = np.atleast_2d(np.imag(y)).reshape((-1, 1)) if np.ndim(y) == 1 \
+             else np.atleast_2d(np.imag(y))
+        v = ds_quantize(yr, n) + 1j*ds_quantize(yi, n)
+        v = v.reshape(np.shape(y)) if np.ndim(y) >= 1 else v
     else:
         ytmp = np.concatenate((np.real(y) + np.imag(y),
                                np.real(y) - np.imag(y)))

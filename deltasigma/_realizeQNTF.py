@@ -74,7 +74,7 @@ def realizeQNTF(ntf, form='FB', rot=False, bn=0.):
 
     A = np.diag(ntf_z)
     subdiag = diagonal_indices(A, -1)
-    A[subdiag] = 1.
+    A[tuple(subdiag)] = 1.
     if form == 'PFB' or form == 'PFF':
         # partition the NTF zeros into in-band and image-band
         for _ in range(2):

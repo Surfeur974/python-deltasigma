@@ -1,115 +1,49 @@
 # -*- coding: utf-8 -*-
-# _figureMagic.py
-# Module providing figureMagic()
-# Copyright 2013 Giuseppe Venturini
-# This file is part of python-deltasigma.
-#
-# python-deltasigma is a 1:1 Python replacement of Richard Schreier's
-# MATLAB delta sigma toolbox (aka "delsigma"), upon which it is heavily based.
-# The delta sigma toolbox is (c) 2009, Richard Schreier.
-#
-# python-deltasigma is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# LICENSE file for the licensing terms.
-
-"""Module providing the utility function figureMagic()
-"""
-
-from __future__ import division
-
 from warnings import warn
-
 import numpy as np
-import pylab as plt
-
-
-def figureMagic(xRange=None, dx=None, xLab=None, yRange=None, dy=None,
-                yLab=None, size=None, name=None):
-    """Utility function to quickly set plot parameters.
-
-    **Parameters:**
-
-    xRange : 2 elements sequence, optional
-        set the x-axis limits
-
-    dx : scalar, optional
-        set the ticks spacing on the x-axis
-
-    xLab : any, optional
-        Ignored variable, only accepted for compatibility with the MATLAB
-        syntax.
-
-    yRange : 2 elements sequence, optional
-        set the y-axis limits
-
-    dy : scalar, optional
-        set the ticks spacing on the y-axis
-
-    yLab : any, optional
-        Ignored variable, only accepted for compatibility with the MATLAB
-        syntax.
-
-    size : 2-elements sequence, optional
-        Figure size, in inches.
-
-    name : string, optional
-        Title for the current plot (or subplot)
-
-    All parameters are optional and any unspecified figure parameter is
-    left untouched.
-
-    .. plot::
-
-       import numpy as np
-       import pylab as plt
-       from deltasigma import figureMagic
-       t = np.linspace(0, 1)
-       a = np.sin(2*np.pi*t + np.pi/4)
-       plt.subplot(121)
-       plt.plot(t, a)
-       plt.title("Before")
-       plt.subplot(122)
-       plt.plot(t, a)
-       plt.title("After")
-       figureMagic([0, 1], dx=.1, xLab=None, yRange=[-1.2, 1.2],
-                   dy=.2, yLab=None, size=(8, 4), name="After")
-
-    .. seealso:: :func:`changeFig` to quickly change low-level plot parameters
-                 such as font and marker size, the linewidth, or to prepare a
-                 plot for printing in B/W.
-    """
-    fig = plt.gcf()
-    if size is not None and len(size):
-        fig.set_size_inches(size)
-
-    plt.grid(True)
-
-    ax = plt.gca()
-    if name is not None:
-        ax.set_title(name, fontsize=14)
-
-    if xRange is not None or yRange is not None:
-        ax.set_autoscale_on(False)
-        ax.set_aspect('auto', 'box')
-
+import matplotlib.pyplot as plt
+def _finite_xy(x,y):
+    try: return np.isfinite(float(x)) and np.isfinite(float(y))
+    except (TypeError,ValueError): return False
+def figureMagic(xRange=None, dx=None, xLab=None, yRange=None, dy=None, yLab=None, size=None, name=None):
+    fig=plt.gcf(); ax=plt.gca(); max_w,max_h,max_dpi,max_px=16.,10.,100.,2000.
+    dpi=float(fig.get_dpi())
+    if not np.isfinite(dpi) or dpi<=0: dpi=100.
+    dpi=min(dpi,max_dpi); fig.set_dpi(dpi)
+    if size is not None:
+        size=np.asarray(size,dtype=float).ravel()
+        if size.size!=2 or not np.all(np.isfinite(size)) or np.any(size<=0):
+            warn("figureMagic(): size invalide, valeur par defaut (12, 6).")
+            size=np.array([12.,6.])
+        fig.set_size_inches(min(float(size[0]),max_w,max_px/dpi), min(float(size[1]),max_h,max_px/dpi), forward=True)
+    for txt in list(ax.texts):
+        x,y=txt.get_position()
+        if not _finite_xy(x,y): txt.remove()
     if xRange is not None:
-        ax.set_xlim(xRange)
+        xR=np.asarray(xRange,dtype=float).ravel()
+        if xR.size==2 and np.all(np.isfinite(xR)) and xR[0]!=xR[1]: ax.set_xlim(float(xR[0]),float(xR[1]))
+        else: warn(f"figureMagic(): xRange ignore ({xRange}).")
     if yRange is not None:
-        ax.set_ylim(yRange)
-
+        yR=np.asarray(yRange,dtype=float).ravel()
+        if yR.size==2 and np.all(np.isfinite(yR)) and yR[0]!=yR[1]: ax.set_ylim(float(yR[0]),float(yR[1]))
+        else: warn(f"figureMagic(): yRange ignore ({yRange}).")
+    if xRange is not None or yRange is not None: ax.set_autoscale_on(False); ax.set_aspect("auto", adjustable="box")
     if dx is not None:
-        x1, x2 = ax.get_xlim()
-        ax.xaxis.set_ticks(np.arange(x1, x2, dx))
+        dx=float(dx)
+        if np.isfinite(dx) and dx>0:
+            x1,x2=ax.get_xlim(); step=dx if x2>=x1 else -dx; ticks=np.arange(x1,x2+0.5*step,step,dtype=float)
+            if 0<ticks.size<=1000: ax.set_xticks(ticks)
     if dy is not None:
-        y1, y2 = ax.get_ylim()
-        ax.yaxis.set_ticks(np.arange(y1, y2, dy))
-    # ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.1f'))
-
-    if xLab is not None:
-        warn(('figureMagic() got xLab=%s, but xLab is not implemented and ' +
-              'will be ignored.') % xLab)
-    if yLab is not None:
-        warn(('figureMagic() got yLab=%s, but xLab is not implemented and ' +
-              'will be ignored.') % yLab)
-    return
+        dy=float(dy)
+        if np.isfinite(dy) and dy>0:
+            y1,y2=ax.get_ylim(); step=dy if y2>=y1 else -dy; ticks=np.arange(y1,y2+0.5*step,step,dtype=float)
+            if 0<ticks.size<=1000: ax.set_yticks(ticks)
+    if isinstance(xLab,str): ax.set_xlabel(xLab)
+    if isinstance(yLab,str): ax.set_ylabel(yLab)
+    if name is not None: ax.set_title(str(name), fontsize=14)
+    ax.grid(True); w,h=fig.get_size_inches()
+    if not np.all(np.isfinite([w,h])) or w<=0 or h<=0: fig.set_dpi(100.); fig.set_size_inches(12.,6.,forward=True); w,h=12.,6.
+    px_w,px_h=w*fig.get_dpi(),h*fig.get_dpi()
+    if px_w>max_px or px_h>max_px:
+        scale=min(max_px/px_w,max_px/px_h); fig.set_size_inches(w*scale,h*scale,forward=True)
+    return None

@@ -19,7 +19,8 @@
 from warnings import warn
 
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 
 
 # Plot lollipops (o's and sticks)
@@ -70,9 +71,16 @@ def lollipop(x, y, color=None, lw=2, ybot=0):
     if ybot:
         warn('lollipop() got a non-zero ybot, but only ybot=0 is ' + \
              'supported. Setting ybot to 0.')
-    markerline, stemlines, baseline = plt.stem(x, y, '-')
+    markerline, stemlines, baseline = plt.stem(x, y, linefmt='-')
     if not color or color == 'None':
-        color = stemlines[0].get_color()
+        # Matplotlib >= 3.8 : stem() renvoie un LineCollection (non indexable)
+        # au lieu d'une liste de Line2D. On gere les deux cas.
+        try:
+            color = stemlines[0].get_color()
+        except (TypeError, IndexError):
+            colors = stemlines.get_color()
+            color = colors[0] if len(np.shape(colors)) > 1 else colors
+        color = mcolors.to_hex(color)
     lolli_fmt = {'linewidth': lw, 'color': color}
     pop_fmt = {'mec': color, 'markerfacecolor':'None',  \
                'markersize':10, 'markeredgewidth': lw*1.1}

@@ -31,7 +31,16 @@ def bunquantize(q):
         :func:`bquantize`
 
     """
+    q = np.atleast_2d(carray(q))
+    # q est de forme (2n, m) : lignes paires = signes, lignes impaires = exposants.
+    # Une matrice CSD unique (2, m) doit donner UNE valeur, pas m valeurs.
+    if q.shape[0] % 2 != 0:
+        raise ValueError('q doit avoir un nombre pair de lignes, recu %d'
+                         % q.shape[0])
     y = []
-    for qi in q:
-        y += [(qi[1:qi.shape[0]+1:2, :]*2.**qi[:qi.shape[0]:2, :]).sum()]
+    for start in range(0, q.shape[0], 2):
+        # ligne paire = exposants de 2, ligne impaire = signes
+        powers = q[start, :]
+        signs = q[start + 1, :]
+        y += [float(np.sum(signs*2.**powers))]
     return carray(y)

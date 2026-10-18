@@ -17,6 +17,7 @@
 """
 
 from __future__ import division, print_function
+from collections.abc import Iterable
 
 import collections
 from warnings import warn
@@ -102,15 +103,15 @@ def simulateSNR(arg1, osr, amp=None, f0=0, nlev=2, f=None, k=13,
         f = \\frac{1}{4\ \mathrm{OSR}}
 
     k : int, optional
-        The number of samples used to compute the FFT is set by the integer
-        ``k`` - default value 13 - through the relationship:
+        The number of samples used to compute the FFT is set by the integer `k`
+        - default value 13 - through:
 
     .. math::
 
         N_{samples} = 2^k
 
     quadrature : boolean, optional
-        Whether the delta-sigma modulator is a quadrature modulator or not.
+        Whether the delta sigma modulator is a quadrature modulator or not.
         Defaults to ``False``.
 
     **Returns:**
@@ -121,22 +122,19 @@ def simulateSNR(arg1, osr, amp=None, f0=0, nlev=2, f=None, k=13,
     amp : ndarray
         The amplitudes corresponding to the SNR values.
 
-    .. seealso:: :func:`predictSNR`.
-
     .. rubric:: Example:
 
     Compare the SNR vs input amplitude curve for a fifth-order modulator, as 
-    computed by the describing function method (:func:`predictSNR`) with
+    determined by the describing function method (:func:`predictSNR`) with
     that determined by simulation (:func:`simulateSNR`).::
 
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from deltasigma import *
         OSR = 32
         H = synthesizeNTF(5, OSR, 1)
         snr_pred, amp, _, _, _ = predictSNR(H,OSR)
         snr, amp = simulateSNR(H, OSR)
         plt.plot(amp, snr_pred, 'b', label='Predicted')
-        plt.hold(True)
         plt.plot(amp, snr, 'go', label='Simulated')
         plt.grid(True)
         figureMagic([-100, 0], 10, None,
@@ -149,14 +147,13 @@ def simulateSNR(arg1, osr, amp=None, f0=0, nlev=2, f=None, k=13,
 
     .. plot::
 
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from deltasigma import *
         OSR = 32
         H = synthesizeNTF(5, OSR, 1)
         snr_pred, amp, _, _, _ = predictSNR(H,OSR)
         snr, amp = simulateSNR(H, OSR)
         plt.plot(amp, snr_pred, 'b', label='Predicted')
-        plt.hold(True)
         plt.plot(amp, snr, 'go', label='Simulated')
         plt.grid(True)
         figureMagic([-100, 0], 10, None,
@@ -191,7 +188,7 @@ def simulateSNR(arg1, osr, amp=None, f0=0, nlev=2, f=None, k=13,
         amp = np.concatenate((np.arange(- 120, -20 + 1, 10),
                               np.array((-15,)),
                               np.arange(-10, 1)))
-    elif not isinstance(amp, collections.Iterable):
+    elif not isinstance(amp, Iterable):
         amp = np.array((amp, ))
     else:
         amp = np.asarray(amp)
@@ -221,13 +218,13 @@ def simulateSNR(arg1, osr, amp=None, f0=0, nlev=2, f=None, k=13,
         F = 2
     Ntransient = 100
     soft_start = 0.5*(1 - np.cos(2*np.pi/Ntransient * \
-                                 np.arange(Ntransient/2)))
+                                 np.arange(Ntransient//2)))
     if not quadrature:
         tone = M*np.sin(2*np.pi*F/N*np.arange(N + Ntransient))
-        tone[:Ntransient/2] = tone[:Ntransient/2] * soft_start
+        tone[:Ntransient//2] = tone[:Ntransient//2] * soft_start
     else:
         tone = M*np.exp(2j*np.pi*F/N * np.arange(N + Ntransient))
-        tone[:Ntransient/2] = tone[:Ntransient/2] * soft_start
+        tone[:Ntransient//2] = tone[:Ntransient//2] * soft_start
         if not quadrature_ntf:
             tone = tone.reshape((1, -1))
             tone = np.vstack((np.real(tone), np.imag(tone)))

@@ -20,7 +20,7 @@ class testMultipleQ:
                 [0, 0, 1, 1, 0, 0, -2],
                 [0, 1, 0, 0, 0, 0, 0],
                 [0, 0, 0, 1, 0, 0, 0]]
-        self.ABCD = np.array(ABCD, dtype=np.float_)
+        self.ABCD = np.array(ABCD, dtype=np.float64)
         self.nlev = [9, 9]
         k = [1., 1.]
         self.ntfs, self.stfs = ds.calculateTF(self.ABCD, k)

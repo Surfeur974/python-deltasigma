@@ -33,21 +33,13 @@ from ._evalTF import evalTF
 from ._partitionABCD import partitionABCD
 from ._utils import carray, diagonal_indices, _is_zpk, _is_A_B_C_D, _is_num_den
 
-# try to import and, if necessary, compile the Cython-optimized
-# core of the simulation code`
 try:
-    import pyximport
-    pyximport.install(setup_args=setup_args, inplace=True)
+    from ._simulateQDSM_cython import simulateQDSM_core
+except ImportError:
     from ._simulateQDSM_core import simulateQDSM_core
-except ImportError as e:
-    if _debug:
-        print(str(e))
-    # we'll just fall back to the Python version
-    pass
-
 
 def simulateQDSM(u, arg2, nlev=2, x0=None):
-    """Simulate a quadrature delta-sigma modulator.
+    """Simulate a quadrature Delta-Sigma modulator
 
     This function computes the output of a quadrature delta-sigma modulator
     corresponding to an input :math:`u`, with a description of the modulator, an
@@ -169,7 +161,7 @@ def simulateQDSM(u, arg2, nlev=2, x0=None):
         diag = diagonal_indices(A, 0)
         A[diag] = zeros
         subdiag = diagonal_indices(A, -1)
-        A[subdiag] = 1.
+        A[tuple(subdiag)] = 1.
         # Compute C st C*inv(zI-A)*B = 1-1/H(z);
         w = 2*np.pi*np.random.rand(2*order)
         desired = 1 - 1.0/evalTF((zeros, poles, k), np.exp(1j*w))
@@ -187,6 +179,13 @@ def simulateQDSM(u, arg2, nlev=2, x0=None):
         B1 = -B2
         B = np.hstack((B1, B2))
         D1 = np.ones((1, 1), dtype='complex128')
-    v, xn, xmax, y = simulateQDSM_core(u, A, B, C, D1, order, nlev, nq, x0)
+    v, xn, xmax, y = simulateQDSM_core(
+        np.ascontiguousarray(u, dtype=np.complex128),
+        np.ascontiguousarray(A, dtype=np.complex128),
+        np.ascontiguousarray(B, dtype=np.complex128),
+        np.ascontiguousarray(C, dtype=np.complex128),
+        np.ascontiguousarray(D1, dtype=np.complex128), order,
+        np.atleast_1d(nlev), nq,
+        np.ascontiguousarray(x0.reshape(-1), dtype=np.complex128))
     return v.squeeze(), xn.squeeze(), xmax, y.squeeze()
 

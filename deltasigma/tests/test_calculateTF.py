@@ -105,7 +105,7 @@ class TestCalculateTF(unittest.TestCase):
         ABCD = [[1, 1, -1, 0],
                 [1, 0, 0, 0],
                 [1, 0, -1, 0]]
-        ABCD = np.array(ABCD, dtype=np.float_)
+        ABCD = np.array(ABCD, dtype=np.float64)
         k = [1., 1.]
         # here we get back arrays of transfer functions
         ntfs, stfs = ds.calculateTF(ABCD, k=k)

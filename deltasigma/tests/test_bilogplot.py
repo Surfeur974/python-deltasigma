@@ -20,7 +20,7 @@ from __future__ import division
 
 import unittest
 import numpy as np
-import pylab as plt
+import matplotlib.pyplot as plt
 import deltasigma as ds
 
 class TestBiLogPlot(unittest.TestCase):

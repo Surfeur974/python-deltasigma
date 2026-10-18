@@ -13,7 +13,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # LICENSE file for the licensing terms.
 
-"""
+r"""
 *A port of the* **MATLAB Delta Sigma Toolbox** *based on free software and
 very little sleep.*
 
@@ -915,8 +915,51 @@ __status__ = "Stable"
 # if not os.system('python -c "import matplotlib.pyplot as plt;plt.figure()"')
 import matplotlib
 import os
-if not ('DISPLAY' in os.environ or os.environ.get('READTHEDOCS', None)):
-    matplotlib.use('Agg')
+import sys
+
+
+def _select_matplotlib_backend():
+    """Choisit un backend sans display uniquement si c'est necessaire.
+
+    Le code d'origine forcait `matplotlib.use('Agg')` des que la variable
+    d'environnement DISPLAY etait absente. Or DISPLAY n'existe pas sous
+    Windows ni macOS : le backend etait donc force en 'Agg' sur ces
+    plateformes, ce qui empeche l'affichage des figures dans Jupyter,
+    VS Code et IPython (aucune image sous les cellules).
+
+    Nouvelle regle :
+      - si un noyau IPython/Jupyter est actif, on ne touche a rien
+        (le backend inline doit rester en place) ;
+      - si l'utilisateur a deja choisi un backend sans interface
+        graphique, on ne touche a rien ;
+      - on ne bascule sur 'Agg' que sous Linux sans serveur X, cas ou un
+        backend graphique echouerait reellement.
+    """
+    if os.environ.get('READTHEDOCS'):
+        return
+
+    # 1. Noyau interactif (Jupyter, VS Code, IPython) : ne rien forcer.
+    try:
+        from IPython import get_ipython
+        shell = get_ipython()
+        if shell is not None and shell.__class__.__name__ != 'TerminalInteractiveShell':
+            return
+    except Exception:
+        pass
+
+    # 2. Backend deja sans interface graphique (inline, agg, pdf...) :
+    #    rien a faire.
+    current = matplotlib.get_backend().lower()
+    if current.startswith('module://') or current in (
+            'agg', 'pdf', 'ps', 'svg', 'cairo', 'template'):
+        return
+
+    # 3. Seul cas problematique : Linux sans serveur graphique.
+    if sys.platform.startswith('linux') and not os.environ.get('DISPLAY'):
+        matplotlib.use('Agg')
+
+
+_select_matplotlib_backend()
 
 from ._DocumentNTF import DocumentNTF
 from ._PlotExampleSpectrum import PlotExampleSpectrum

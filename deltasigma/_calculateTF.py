@@ -164,7 +164,7 @@ def calculateTF(ABCD, k=1.):
                      np.dot(B2, Ct)))
     Ccl = np.dot(Ct, np.dot(diagk, C))
     Dcl = np.dot(Ct, np.hstack((np.dot(diagk, D1), np.eye(nq))))
-    tol = min(1e-3, max(1e-6, eps**(1/ABCD.shape[0])))
+    tol = min(1e-3, max(1e-6, eps**(1.0/ABCD.shape[0])))
     ntfs = np.empty((nq, Dcl.shape[0]), dtype=np.object_)
     stfs = np.empty((Dcl.shape[0],), dtype=np.object_)
 

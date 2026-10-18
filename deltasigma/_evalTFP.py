@@ -68,7 +68,7 @@ def evalTFP(Hs, Hz, f):
     Plot the STF of the 2nd-order CT system depicted at :func:`mapCtoD`.::
 
         import numpy as np
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from scipy.signal import lti
         from deltasigma import *
         from deltasigma._utils import _get_zpk
@@ -97,7 +97,7 @@ def evalTFP(Hs, Hz, f):
     .. plot::
 
         import numpy as np
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from scipy.signal import lti
         from deltasigma import *
         from deltasigma._utils import _get_zpk
@@ -162,7 +162,7 @@ def evalTFP(Hs, Hz, f):
                 H[i] = 0.
             else:
                 if np.sum(cancelz) < np.sum(cancel):
-                    H[i] = np.Inf
+                    H[i] = np.inf
                 else:
                     H[i] = evalRPoly(szeros, si, sk)*zi**np.sum(cancel) \
                            * evalRPoly(zzeros[~cancelz], zi, zk) \

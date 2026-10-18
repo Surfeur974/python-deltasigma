@@ -17,6 +17,7 @@
 """
 
 from __future__ import division
+from collections.abc import Iterable
 
 import collections
 from warnings import warn
@@ -26,6 +27,10 @@ from scipy.linalg import inv, norm, orth
 from scipy.signal import tf2zpk, zpk2ss
 
 from ._utils import _get_zpk, carray
+try:
+    from ._simulateDSM_core import simulateDSM_core as _cython_core
+except ImportError:
+    _cython_core = None
 
 
 def simulateDSM(u, arg2, nlev=2, x0=0.):
@@ -67,7 +72,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
     .. plot::
 
         import numpy as np
-        import pylab as plt
+        import matplotlib.pyplot as plt
         from numpy.fft import fft
         from deltasigma import *
         OSR = 32
@@ -82,7 +87,6 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         t = np.arange(85)
         # the equivalent of MATLAB 'stairs' is step in matplotlib
         plt.step(t, u[t], 'g', label='u(n)')
-        plt.hold(True)
         plt.step(t, v[t], 'b', label='v(n)')
         plt.axis([0, 85, -1.2, 1.2]);
         plt.ylabel('u, v');
@@ -90,7 +94,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         plt.legend()
         plt.subplot(2, 1, 2)
         spec = fft(v*ds_hann(N))/(N/4)
-        plt.plot(np.linspace(0, 0.5, N/2 + 1), dbv(spec[:N/2 + 1]))
+        plt.plot(np.linspace(0, 0.5, N//2 + 1), dbv(spec[:N//2 + 1]))
         plt.axis([0, 0.5, -120, 0])
         plt.grid(True)
         plt.ylabel('dBFS/NBW')
@@ -132,7 +136,7 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
     # need to set order and form now.
     order = carray(zeros).shape[0] if form == 2 else ABCD.shape[0] - nq
     
-    if not isinstance(x0, collections.Iterable):
+    if not isinstance(x0, Iterable):
         x0 = x0*np.ones((order,), dtype=np.float64)
     else:
         x0 = np.array(x0).reshape((-1,))
@@ -160,6 +164,15 @@ def simulateDSM(u, arg2, nlev=2, x0=0.):
         B1 = -B2
         D1 = 1
         B = np.hstack((B1, B2))
+
+    if _cython_core is not None:
+        return _cython_core(np.ascontiguousarray(u, dtype=np.float64),
+                            np.ascontiguousarray(A, dtype=np.float64),
+                            np.ascontiguousarray(B, dtype=np.float64),
+                            np.ascontiguousarray(C, dtype=np.float64),
+                            np.ascontiguousarray(np.atleast_2d(D1), dtype=np.float64),
+                            np.ascontiguousarray(nlev, dtype=np.float64),
+                            np.ascontiguousarray(x0, dtype=np.float64))
 
     N = u.shape[1]
     v = np.empty((nq, N), dtype=np.float64)

@@ -70,12 +70,12 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         # B2 = -(a_1 a_2... a_n)
         ABCD[:order, order + 1] = -a
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order,))
+        ABCD[tuple(diagonal)] = np.ones((order,))
         subdiag = [i[even:order:2] for i in diagonal_indices(ABCD, -1)]
-        ABCD[subdiag] = c[0, even:order:2]
+        ABCD[tuple(subdiag)] = c[0, even:order:2]
         if order > odd:
             supdiag = [i[odd:order:2] for i in diagonal_indices(ABCD[:order, :order], +1)]
-            ABCD[supdiag] = -g.reshape((-1,))
+            ABCD[tuple(supdiag)] = -g.reshape((-1,))
         # row numbers of delaying integrators
         dly = np.arange(odd + 1, order, 2)
         ABCD[dly, :] = ABCD[dly, :] + np.dot(np.diag(c[0, dly - 1]), ABCD[dly - 1, :])
@@ -86,10 +86,10 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         ABCD[0, order + 1] = -c[0, 0]
         # number of elements = order
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order, ))
+        ABCD[tuple(diagonal)] = np.ones((order, ))
         # subdiag = diagonal[:order - 1:2] + 1
         subdiag = [i[:order - 1:2] for i in diagonal_indices(ABCD, -1)]
-        ABCD[subdiag] = c[0, 1:order:2]
+        ABCD[tuple(subdiag)] = c[0, 1:order:2]
         if even:
             # rows to have g*(following row) subtracted.
             multg = np.arange(0, order, 2)
@@ -100,7 +100,7 @@ def stuffABCD(a, g, b, c, form='CRFB'):
                 # supdiag = diagonal[2:order:2] - 1
                 supdiag = [i[1:order:2] for i in
                            diagonal_indices(ABCD[:order, :order], +1)]
-                ABCD[supdiag] = -g.reshape((-1,))
+                ABCD[tuple(supdiag)] = -g.reshape((-1,))
         # rows to have c*(preceding row) added.
         multc = np.arange(2, order, 2)
         ABCD[multc, :] = ABCD[multc, :] + np.dot(np.diag(c[0, multc]), ABCD[multc - 1, :])
@@ -115,26 +115,26 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         # B2 = -(a_1 a_2... a_n)
         ABCD[:order, order + 1] = -a
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order,))
+        ABCD[tuple(diagonal)] = np.ones((order,))
         subdiag = diagonal_indices(ABCD, -1)
-        ABCD[subdiag] = c.reshape((-1,))
+        ABCD[tuple(subdiag)] = c.reshape((-1,))
         supdiag = [i[odd:order+odd:2] for i in diagonal_indices(ABCD[:order, :order], +1)]
-        ABCD[supdiag] = -g.reshape((-1,))
+        ABCD[tuple(supdiag)] = -g.reshape((-1,))
     elif form == 'CIFF':
         # B1 = (b_1 b_2... b_n), D=(b_(n+1) 0)
         ABCD[:, order] = b
         # B2 = -(c_1 0... 0)
         ABCD[0, order + 1] = -c[0, 0]
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order, ))
+        ABCD[tuple(diagonal)] = np.ones((order, ))
         subdiag = diagonal_indices(ABCD[:order, :order], -1)
-        ABCD[subdiag] = c[0, 1:]
+        ABCD[tuple(subdiag)] = c[0, 1:]
         # C = (a_1 a_2... a_n)
         ABCD[order, :order] = a[0, :order]
         # supdiag = diagonal[odd + 1:order:2] - 1
         supdiag = [i[odd:order+odd:2] for i in  
                    diagonal_indices(ABCD[:order, :order], +1)]
-        ABCD[supdiag] = -g.reshape((-1,))
+        ABCD[tuple(supdiag)] = -g.reshape((-1,))
     elif form == 'CRFBD':
         # C=(0 0...c_n)
         ABCD[order, order - 1] = c[0, order - 1]
@@ -143,12 +143,12 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         # B2 = -(a_1 a_2... a_n)
         ABCD[:order, order + 1] = -a
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order, ))
+        ABCD[tuple(diagonal)] = np.ones((order, ))
         # row numbers of delaying integrators
         dly = np.arange(odd, order, 2)
         subdiag = [np.atleast_1d(i)[dly] for i in
                    diagonal_indices(ABCD[:order, :order], -1)]
-        ABCD[subdiag] = c[0, dly]
+        ABCD[tuple(subdiag)] = c[0, dly]
         supdiag = [np.atleast_1d(i)[dly] for i in 
                    diagonal_indices(ABCD[:order, :order], +1)]
         supdiag = [np.atleast_1d(i[odd:]) for i in supdiag]
@@ -166,7 +166,7 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         ABCD[:, order] = b.reshape((-1,))
         # B2 = -(c_1 0... 0)
         ABCD[0, order + 1] = -c[0, 0]
-        ABCD[diagonal] = np.ones((order, ))
+        ABCD[tuple(diagonal)] = np.ones((order, ))
         # rows to have c*(preceding row) added.
         multc = np.arange(1, order, 2)
         if order > 2:
@@ -209,28 +209,28 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         ABCD[order_1, order + 1] = -c[order_1]
         # number of elements = order
         diagonal = np.arange(0, order*(order + 1), order + 2)
-        ABCD[diagonal] = np.ones((1, order))
+        ABCD[tuple(diagonal)] = np.ones((1, order))
         i = np.hstack((np.arange(0, order_1 - 1, 2),
                        np.arange(order - order_2, order, 2)))
         subdiag = diagonal[i] + 1
-        ABCD[subdiag] = c[i + 1]
+        ABCD[tuple(subdiag)] = c[i + 1]
         if odd_1:
             if order_1 >= 3:
                 supdiag = diagonal[2:order_1:2] - 1
-                ABCD[supdiag] = -g[:(order_1 - 1)/2.]
+                ABCD[tuple(supdiag)] = -g[:(order_1 - 1)//2]
         else:
             # rows to have g*(following row) subtracted.
             multg = np.arange(0, order_1, 2)
-            ABCD[multg, :] = ABCD[multg, :] - np.diag(g[:order_1/2.]) * \
+            ABCD[multg, :] = ABCD[multg, :] - np.diag(g[:order_1//2]) * \
                              ABCD[multg + 1, :]
         if odd_2:
             if order_2 >= 3:
                 supdiag = diagonal[order_1 + 1:order:2] - 1
-                ABCD[supdiag] = -g[:(order_1 - 1)/2.]
+                ABCD[tuple(supdiag)] = -g[:(order_1 - 1)//2]
         else:
             # rows to have g*(following row) subtracted.
             multg = np.arange(order_1, order, 2)
-            gg = g[(order_1 - odd_1)/2:]
+            gg = g[(order_1 - odd_1)//2:]
             ABCD[multg, :] = ABCD[multg, :] - np.diag(gg)*ABCD[multg + 1, :]
         # Rows to have c*(preceding row) added.
         multc = np.hstack((np.arange(2, order_1, 2), 
@@ -254,9 +254,9 @@ def stuffABCD(a, g, b, c, form='CRFB'):
         # # B2 = -(c_1 0... 0)
         ABCD[0, order + 1] = -c[0, 0]
         diagonal = diagonal_indices(ABCD[:order, :order])
-        ABCD[diagonal] = np.ones((order, ))
+        ABCD[tuple(diagonal)] = np.ones((order, ))
         subdiag = diagonal_indices(ABCD[:order, :order], -1)
-        ABCD[subdiag] = c[0, 1:]
+        ABCD[tuple(subdiag)] = c[0, 1:]
         # code based on case 'CRFF':
         # # rows to have g*(following row) subtracted.
         multg = np.arange(odd, order - 1, 2)

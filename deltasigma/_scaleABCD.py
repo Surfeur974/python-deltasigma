@@ -49,8 +49,8 @@ def scaleABCD(ABCD, nlev=2, f=0, xlim=1, ymax=None, umax=None, N_sim=1e5, N0=10)
         A vector or scalar specifying the limit for each state variable.
 
     ymax : scalar, optional
-        The stability threshold. Inputs that yield quantizer inputs above
-        ``ymax`` are considered to be beyond the stable range of the modulator.
+        The stability threshold. Inputs that yield quantizer inputs above ymax
+        are considered to be beyond the stable range of the modulator.
         If not provided, it will be set to :math:`n_{lev} + 5`
 
     umax : scalar, optional
@@ -68,9 +68,9 @@ def scaleABCD(ABCD, nlev=2, f=0, xlim=1, ymax=None, umax=None, N_sim=1e5, N0=10)
         specified limits.
 
     S : ndarray
-        The diagonal scaling matrix.
+        The diagonal scaling matrix S.
 
-    :math:`S` is defined such that::
+    `S` is defined such that::
 
         ABCDs = [[S*A*Sinv, S*B], [C*Sinv, D]]
         xs = S*x
@@ -96,7 +96,7 @@ def scaleABCD(ABCD, nlev=2, f=0, xlim=1, ymax=None, umax=None, N_sim=1e5, N0=10)
         # First get a rough estimate of umax.
         ulist = np.arange(0.1, 1.1, 0.1)*(nlev - 1)
         umax = nlev - 1
-        N = 1000.0
+        N = 1000
         u0 = np.hstack((np.exp(2j*np.pi*f*np.arange(-N0, 0))*raised_cosine, \
                         np.exp(2j*np.pi*f*np.arange(0, N)))) \
               + 0.01*np.dot(np.array([[1, 1j]]), npr.randn(2, N + N0))
@@ -117,7 +117,7 @@ def scaleABCD(ABCD, nlev=2, f=0, xlim=1, ymax=None, umax=None, N_sim=1e5, N0=10)
             raise RuntimeError(msg)
 
     # More detailed simulation
-    N = N_sim
+    N = int(N_sim)
     u0 = np.hstack((np.exp(2j*np.pi*f*np.arange(-N0, 0))*raised_cosine, \
                     np.exp(2j*np.pi*f*np.arange(0, N)))) \
          + 0.01*np.dot(np.array([[1, 1j]]), npr.randn(2, N + N0))

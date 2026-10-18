@@ -47,7 +47,7 @@ def ds_hann(n):
 
     .. plot::
 
-      import pylab as plt
+      import matplotlib.pyplot as plt
       from deltasigma import ds_hann
       x = ds_hann(100)
       plt.figure(figsize=(12, 5))
@@ -60,5 +60,5 @@ def ds_hann(n):
       plt.ylabel("Value")
 
     """
-    x = np.arange(n, dtype='float_')
+    x = np.arange(n, dtype='float64')
     return .5*(1 - np.cos(2*np.pi*x/n))

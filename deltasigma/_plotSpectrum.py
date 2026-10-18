@@ -17,7 +17,7 @@
 """
 from __future__ import division
 
-import pylab as plt
+import matplotlib.pyplot as plt
 
 from ._logsmooth import logsmooth
 
@@ -72,9 +72,8 @@ def plotSpectrum(X, fin, fmt='-', **xargs):
         window = ds_hann(N)
         NBW = 1.5/N
         spec0 = fft(v * window)/(N/4)
-        freq = np.linspace(0, 0.5, N/2 + 1)
-        plt.plot(freq, dbv(spec0[:N/2 + 1]), 'c', linewidth=1, label='$S$')
-        plt.hold(True)
+        freq = np.linspace(0, 0.5, N//2 + 1)
+        plt.plot(freq, dbv(spec0[:N//2 + 1]), 'c', linewidth=1, label='$S$')
         plotSpectrum(spec0, fin, 'b', linewidth=2.5, label='$\\\\mathrm{plotSpectrum}(S)$')
         Snn = np.abs(evalTF(ntf, np.exp(2j*np.pi*freq)))**2 * 2/12*(delta)**2
         plt.plot(freq, dbp(Snn*NBW), 'm', linewidth=1.5, label='$\\\\mathrm{from\\\\ NTF}$')

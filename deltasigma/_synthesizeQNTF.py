@@ -68,7 +68,7 @@ def synthesizeQNTF(order=4, OSR=64, f0=0., NG=-60, ING=-20, n_im=None):
 
     .. note::
 
-        From the MATLAB Delta-Sigma Toolbox:
+        From the Matlab Delta-Sigma Toobox:
         ALPHA VERSION:
         This function uses an experimental ad-hoc method that is
         neither optimal nor robust.
@@ -155,7 +155,7 @@ def synthesizeQNTF(order=4, OSR=64, f0=0., NG=-60, ING=-20, n_im=None):
             NG0 = dbv(rmsGain(ntf0, f1, f2))
             ING0 = dbv(rmsGain(ntf0, -f1, -f2))
             if debug_it:
-                import pylab as plt
+                import matplotlib.pyplot as plt
                 from ._plotPZ import plotPZ
                 from ._figureMagic import figureMagic
                 plt.figure()
@@ -165,7 +165,6 @@ def synthesizeQNTF(order=4, OSR=64, f0=0., NG=-60, ING=-20, n_im=None):
                 print('NG = %.1f, ING= %.1f' % (NG0, ING0))
                 plt.plot(freq, dbv(m))
                 figureMagic([-0.5, 0.5], 0.05, 2, [-100, 30], 10, 2)
-                plt.hold(True)
                 plt.plot([f1, f2], [NG0, NG0], 'k')
                 plt.text(np.mean([f1, f2]), NG0, ('NG=%.1fdB' % NG0), va='bottom')
                 plt.plot([-f1, -f2], [ING0, ING0], 'k')

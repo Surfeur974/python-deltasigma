@@ -18,11 +18,12 @@ pulse response of a CT system.
 """
 
 from __future__ import division
+from collections.abc import Iterable
 
 import collections
 
 import numpy as np
-from scipy.signal import lti, step2
+from scipy.signal import lti, step
 
 from ._utils import _is_A_B_C_D, _is_num_den, _is_zpk, lcm, rat
 
@@ -80,8 +81,8 @@ def pulse(S, tp=(0., 1.), dt=1., tfinal=10., nosum=False):
     _, df = rat(tfinal, 1e-3)
     delta_t = 1./lcm(dd, lcm(ddt, df))
     delta_t = max(1e-3, delta_t)    # Put a lower limit on delta_t
-    if (isinstance(S, collections.Iterable) and len(S)) \
-       and (isinstance(S[0], collections.Iterable) and len(S[0])) \
+    if (isinstance(S, Iterable) and len(S)) \
+       and (isinstance(S[0], Iterable) and len(S[0])) \
            and (isinstance(S[0][0], lti) or _is_zpk(S[0][0]) or _is_num_den(S[0][0]) \
                 or _is_A_B_C_D(S[0][0])):
         pass
@@ -91,7 +92,7 @@ def pulse(S, tp=(0., 1.), dt=1., tfinal=10., nosum=False):
     for Si in S:
         y2 = None
         for So in Si:
-            _, y2i = step2(So, T=np.arange(0., tfinal + delta_t, delta_t))
+            _, y2i = step(So, T=np.arange(0., tfinal + delta_t, delta_t))
             if y2 is None:
                 y2 = y2i.reshape((y2i.shape[0], 1, 1))
             else:
@@ -121,9 +122,9 @@ def pulse(S, tp=(0., 1.), dt=1., tfinal=10., nosum=False):
 
     # notice len(S[0]) is the number of outputs for us
     if not nosum: # Sum the responses due to each input set
-        y = np.zeros((np.ceil(tfinal/float(dt)) + 1, len(S[0]), nis))
+        y = np.zeros((int(np.ceil(tfinal/float(dt))) + 1, len(S[0]), nis))
     else:
-        y = np.zeros((np.ceil(tfinal/float(dt)) + 1, len(S[0]), ni))
+        y = np.zeros((int(np.ceil(tfinal/float(dt))) + 1, len(S[0]), ni))
 
     for i in range(ndac):
         n1 = int(np.round(tp[i, 0]/delta_t, 0))
